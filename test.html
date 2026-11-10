@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>仕訳＆おこづかいパズル（統合版）</title>
+<style>
+  /* 共通ベーススタイル */
+  body {
+    margin: 0;
+    padding: 15px;
+    text-align: center;
+    color: #333;
+    transition: background-color 0.3s;
+  }
+  
+  /* ナビゲーション（上部切り替え） */
+  .top-nav {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+  }
+  .nav-btn {
+    padding: 10px 20px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    background: #e0e0e0;
+    color: #555;
+    transition: 0.2s;
+  }
+  .nav-btn.active#nav-kids { background: #ff4081; color: white; box-shadow: 0 4px 0 #c2185b; }
+  .nav-btn.active#nav-adult { background: #2c3e50; color: white; box-shadow: 0 4px 0 #1a252f; }
+  .nav-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.2) !important; }
+
+  /* 大人モード用サブナビ */
+  .mode-switch {
+    display: none; /* 初期はキッズモードなので非表示 */
+    background: #dfe6e9;
+    border-radius: 25px;
+    padding: 4px;
+    margin-bottom: 15px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+  }
+  .mode-switch.show {
+    display: inline-flex;
+  }
+  .mode-btn {
+    border: none;
+    background: transparent;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 0.95rem;
+    font-weight: bold;
+    color: #636e72;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .mode-btn.active.beginner { background: #3498db; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+  .mode-btn.active.pro { background: #e74c3c; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+
+  /* コンテンツ共通枠 */
+  .question-box {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    line-height: 1.6;
+    transition: 0.3s;
+  }
+  .board {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    max-width: 650px;
+    margin: 0 auto 20px;
+  }
+  .drop-zone {
+    flex: 1;
+    background: #fff;
+    border: 4px dashed #9e9e9e;
+    border-radius: 15px;
+    padding: 15px 10px;
+    min-height: 160px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .zone-title { font-weight: bold; font-size: 1.15rem; margin-bottom: 5px; }
+  .zone-hint { font-size: 0.85rem; color: #555; margin-bottom: 10px; }
+  .slot-container { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+  
+  .cards-area {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    max-width: 650px;
+    margin: 0 auto 25px;
+  }
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 12px 15px;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.1s;
+    min-width: 120px;
+  }
+  .card:active { transform: scale(0.95); }
+  
+  .btn {
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    font-size: 1.3rem;
+    font-weight: bold;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  #feedback {
+    margin-top: 20px;
+    font-size: 1.3rem;
+    font-weight: bold;
+    min-height: 40px;
+    line-height: 1.5;
+  }
+
+  /* =========================================
+     キッズモード (kids-mode) のスタイル
+     ========================================= */
+  body.kids-mode {
+    font-family: "Hiragino Maru Gothic ProN", "Meiryo", sans-serif;
+    background-color: #fce4ec;
+  }
+  .kids-header { color: #d81b60; margin-bottom: 5px; font-size: 1.6rem; }
+  .kids-subtitle { font-size: 1rem; color: #880e4f; margin-bottom: 20px; font-weight: bold; }
+  
+  body.kids-mode .question-box {
+    border: 4px solid #ff4081;
+    box-shadow: 0 6px 0 #f50057;
+  }
+  body.kids-mode .drop-zone.active { transform: scale(1.02); border-style: solid; }
+  body.kids-mode #left-zone.active { border-color: #29b6f6; background-color: #e1f5fe; }
+  body.kids-mode #right-zone.active { border-color: #66bb6a; background-color: #e8f5e9; }
+  body.kids-mode #left-zone .zone-title { color: #0288d1; }
+  body.kids-mode #right-zone .zone-title { color: #2e7d32; }
+  body.kids-mode .zone-hint { background: #eee; border-radius: 20px; padding: 4px 8px; display: inline-block; }
+  
+  body.kids-mode .card { border: 3px solid #ffca28; box-shadow: 0 4px 0 #ffa000; }
+  body.kids-mode .card:active { transform: translateY(4px); box-shadow: 0 0 0 #ffa000; }
+  body.kids-mode .card.selected { outline: 5px solid #ff5252; transform: translateY(-4px); box-shadow: 0 8px 0 #ffa000; }
+  .card-main { font-size: 1.05rem; font-weight: bold; display: block; line-height: 1.4; }
+  .card-sub { font-size: 0.75rem; color: #777; display: block; margin-top: 4px; }
+  
+  body.kids-mode .btn { background-color: #ff9800; box-shadow: 0 6px 0 #e65100; }
+  body.kids-mode .btn:active { transform: translateY(6px); box-shadow: 0 0 0 #e65100; }
+
+  /* =========================================
+     大人モード (adult-mode) のスタイル
+     ========================================= */
+  body.adult-mode {
+    font-family: "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+    background-color: #f4f7f6;
+  }
+  .adult-header { color: #2c3e50; margin-bottom: 10px; font-size: 1.4rem; }
+  .adult-status { font-size: 1rem; font-weight: bold; color: #e67e22; margin-bottom: 15px; }
+  
+  body.adult-mode .question-box {
+    border: none;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  }
+  body.adult-mode .drop-zone { border: 3px dashed #bdc3c7; min-height: 150px; border-radius: 12px; }
+  body.adult-mode .drop-zone.active { border-color: #3498db; background-color: #ebf5fb; }
+  
+  body.adult-mode .card { border: 2px solid #95a5a6; padding: 10px 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+  body.adult-mode .card.selected { outline: 4px solid #f1c40f; transform: translateY(-3px); }
+  
+  body.adult-mode.beginner-mode .asset { border-color: #3498db; background-color: #eaf4fc; }
+  body.adult-mode.beginner-mode .liability { border-color: #e74c3c; background-color: #fdedec; }
+  body.adult-mode.beginner-mode .revenue { border-color: #2ecc71; background-color: #eafaf1; }
+  body.adult-mode.beginner-mode .expense { border-color: #e67e22; background-color: #fdf2e9; }
+  
+  body.adult-mode.pro-mode .memo,
+  body.adult-mode.pro-mode .zone-hint { display: none; }
+  
+  ruby { font-size: 1.1rem; font-weight: bold; }
+  rt { font-size: 0.65rem; color: #555; }
+  .memo { display: block; font-size: 0.75rem; color: #444; margin-top: 4px; }
+  
+  body.adult-mode .btn { background-color: #2ecc71; box-shadow: 0 4px 0 #27ae60; padding: 12px 30px; border-radius: 8px; }
+  body.adult-mode .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #27ae60; }
+  
+  /* 表示切替用 */
+  .kids-only { display: block; }
+  .adult-only { display: none; }
+  body.adult-mode .kids-only { display: none; }
+  body.adult-mode .adult-only { display: block; }
+
+</style>
+</head>
+<body class="kids-mode">
+
+  <div class="top-nav">
+    <button class="nav-btn active" id="nav-kids" onclick="setMainMode('kids')">🧒 キッズ向け</button>
+    <button class="nav-btn" id="nav-adult" onclick="setMainMode('adult')">👨‍💼 大人向け（簿記）</button>
+  </div>
+
+  <!-- ヘッダー部分 -->
+  <div class="kids-only">
+    <h1 class="kids-header">💰 キッズおこづかいパズル</h1>
+    <div class="kids-subtitle">〜 レベルアップで大人の「シワケ」がわかる！ 〜</div>
+  </div>
+  
+  <div class="adult-only">
+    <h1 class="adult-header">簿記初級 <ruby>仕訳<rt>しわけ</rt></ruby>ゲーム</h1>
+    <div class="mode-switch" id="adult-sub-nav">
+      <button class="mode-btn active beginner" id="btn-beginner" onclick="switchAdultMode('beginner')">🔰 入門（色・ヒントあり）</button>
+      <button class="mode-btn pro" id="btn-pro" onclick="switchAdultMode('pro')">🔥 本格的（ヒントなし）</button>
+    </div>
+    <div class="adult-status">せいかい数: <span id="score">0</span> / 連続コンボ: <span id="combo">0</span></div>
+  </div>
+
+  <div class="question-box" id="question-text">よみこみ中...</div>
+
+  <div class="board">
+    <div class="drop-zone" id="left-zone" onclick="placeCard('left')">
+      <div class="zone-title" id="title-left">🎁 左：ゲットしたもの（増えた）</div>
+      <div class="zone-hint" id="hint-left">手に入れたもの・増えたもの</div>
+      <div class="slot-container" id="left-slot"></div>
+    </div>
+    <div class="drop-zone" id="right-zone" onclick="placeCard('right')">
+      <div class="zone-title" id="title-right">👛 右：バイバイしたもの（減った）</div>
+      <div class="zone-hint" id="hint-right">手ばなしたもの・あげたもの</div>
+      <div class="slot-container" id="right-slot"></div>
+    </div>
+  </div>
+
+  <div class="cards-area" id="cards-pool"></div>
+
+  <button class="btn" id="check-btn" onclick="checkAnswer()">これできまり！</button>
+  <div id="feedback"></div>
+
+<script>
+  /* =====================
+     問題データ（アドバイスを反映！）
+     ===================== */
+  const kidsQuestions = [
+    {
+      text: "【Lv.1：基本】<br>おかしを 100円で買って、さいふからお金をはらった。",
+      left: ["おやつ（おかし）を買ったこと"], right: ["さいふの中のお金（現金）"],
+      choices: [
+        { id: "おやつ（おかし）を買ったこと", label: "おやつ（おかし）を<br>買ったこと", sub: "大人の言葉：消耗品費" },
+        { id: "さいふの中のお金（現金）", label: "さいふの中のお金<br>（現金）", sub: "大人の言葉：現金" },
+        { id: "おてつだいをして稼いだこと", label: "おてつだいをして<br>稼いだこと", sub: "大人の言葉：売上" }
+      ]
+    },
+    {
+      text: "【Lv.2：お手伝い】<br>おてつだいをして、100円もらってさいふに入れた。",
+      left: ["さいふの中のお金（現金）"], right: ["おてつだいをして稼いだこと"],
+      choices: [
+        { id: "さいふの中のお金（現金）", label: "さいふの中のお金<br>（現金）", sub: "大人の言葉：現金" },
+        { id: "おてつだいをして稼いだこと", label: "おてつだいをして<br>稼いだこと", sub: "大人の言葉：売上" },
+        { id: "貯金箱のお金", label: "貯金箱のお金", sub: "大人の言葉：現金" }
+      ]
+    },
+    {
+      text: "【Lv.3：お金のお引っ越し】<br>さいふから500円出して、貯金箱に入れた。",
+      left: ["貯金箱のお金"], right: ["さいふの中のお金（現金）"],
+      choices: [
+        { id: "貯金箱のお金", label: "貯金箱のお金", sub: "大人の言葉：現金" },
+        { id: "さいふの中のお金（現金）", label: "さいふの中のお金<br>（現金）", sub: "大人の言葉：現金" },
+        { id: "通帳のお金", label: "通帳のお金", sub: "大人の言葉：普通預金" }
+      ]
+    },
+    {
+      text: "【Lv.4：キャッシュレス】<br>ゲームを1,000円で買って、ICカード（ペイペイなど）で払った。",
+      left: ["ゲーム（おもちゃ）を買ったこと"], right: ["ICカードのお金"],
+      choices: [
+        { id: "ゲーム（おもちゃ）を買ったこと", label: "ゲーム（おもちゃ）を<br>買ったこと", sub: "大人の言葉：消耗品費" },
+        { id: "ICカードのお金", label: "ICカードのお金", sub: "大人の言葉：電子マネー" },
+        { id: "さいふの中のお金（現金）", label: "さいふの中のお金<br>（現金）", sub: "大人の言葉：現金" }
+      ]
+    },
+    {
+      text: "【Lv.5：ツケ（あと払い）】<br>本を500円で買って、お金は来月のおこづかいから払う約束をした。",
+      left: ["本を買ったこと"], right: ["あとで払う約束"],
+      choices: [
+        { id: "本を買ったこと", label: "本を買ったこと", sub: "大人の言葉：消耗品費" },
+        { id: "あとで払う約束", label: "あとで払う約束", sub: "大人の言葉：買掛金・未払金" },
+        { id: "さいふの中のお金（現金）", label: "さいふの中のお金<br>（現金）", sub: "大人の言葉：現金" }
+      ]
+    },
+    {
+      text: "【Lv.6：ボス問題！】<br>もらったお年玉3,000円を、銀行の通帳に預けた。",
+      left: ["通帳のお金"], right: ["さいふの中のお金（現金）"],
+      choices: [
+        { id: "通帳のお金", label: "通帳のお金", sub: "大人の言葉：普通預金" },
+        { id: "さいふの中のお金（現金）", label: "さいふの中のお金<br>（現金）", sub: "大人の言葉：現金" },
+        { id: "貯金箱のお金", label: "貯金箱のお金", sub: "大人の言葉：現金" }
+      ]
+    }
+  ];
+
+  const beginnerQuestions = [
+    {
+      text: "<ruby>現金<rt>げんきん</rt></ruby> 1,000円で、お店の<ruby>消耗品<rt>しょうもうひん</rt></ruby>（ペン）を買った。",
+      left: ["消耗品費"], right: ["現金"],
+      choices: [
+        { id: "現金", ruby: "<ruby>現金<rt>げんきん</rt></ruby>", memo: "手元のお金", type: "asset" },
+        { id: "消耗品費", ruby: "<ruby>消耗品費<rt>しょうもうひんひ</rt></ruby>", memo: "文房具などの費用", type: "expense" },
+        { id: "売上", ruby: "<ruby>売上<rt>うりあげ</rt></ruby>", memo: "商品が売れた", type: "revenue" },
+        { id: "買掛金", ruby: "<ruby>買掛金<rt>かいかけきん</rt></ruby>", memo: "あとで払う代金", type: "liability" }
+      ]
+    },
+    {
+      text: "商品を 5,000円で売り上げ、代金は<ruby>現金<rt>げんきん</rt></ruby>で受け取った。",
+      left: ["現金"], right: ["売上"],
+      choices: [
+        { id: "現金", ruby: "<ruby>現金<rt>げんきん</rt></ruby>", memo: "手元のお金", type: "asset" },
+        { id: "売上", ruby: "<ruby>売上<rt>うりあげ</rt></ruby>", memo: "商品が売れた", type: "revenue" },
+        { id: "仕入", ruby: "<ruby>仕入<rt>しいれ</rt></ruby>", memo: "商品を買った", type: "expense" },
+        { id: "売掛金", ruby: "<ruby>売掛金<rt>うりかけきん</rt></ruby>", memo: "あとでもらう代金", type: "asset" }
+      ]
+    },
+    {
+      text: "商品を 3,000円で<ruby>仕入<rt>しい</rt></ruby>れ、代金は「ツケ（あと払い）」にした。",
+      left: ["仕入"], right: ["買掛金"],
+      choices: [
+        { id: "仕入", ruby: "<ruby>仕入<rt>しいれ</rt></ruby>", memo: "商品を買った", type: "expense" },
+        { id: "買掛金", ruby: "<ruby>買掛金<rt>かいかけきん</rt></ruby>", memo: "あとで払う代金", type: "liability" },
+        { id: "売掛金", ruby: "<ruby>売掛金<rt>うりかけきん</rt></ruby>", memo: "あとでもらう代金", type: "asset" },
+        { id: "現金", ruby: "<ruby>現金<rt>げんきん</rt></ruby>", memo: "手元のお金", type: "asset" }
+      ]
+    }
+  ];
+
+  const proQuestions = [
+    {
+      text: "商品 10,000円を<ruby>仕入<rt>しい</rt></ruby>れ、3,000円は<ruby>現金<rt>げんきん</rt></ruby>で払い、残りは<ruby>掛<rt>かけ</rt></ruby>とした。",
+      left: ["仕入"], right: ["現金", "買掛金"],
+      choices: [
+        { id: "仕入", ruby: "<ruby>仕入<rt>しいれ</rt></ruby>", memo: "", type: "expense" },
+        { id: "現金", ruby: "<ruby>現金<rt>げんきん</rt></ruby>", memo: "", type: "asset" },
+        { id: "買掛金", ruby: "<ruby>買掛金<rt>かいかけきん</rt></ruby>", memo: "", type: "liability" },
+        { id: "売掛金", ruby: "<ruby>売掛金<rt>うりかけきん</rt></ruby>", memo: "", type: "asset" },
+        { id: "売上", ruby: "<ruby>売上<rt>うりあげ</rt></ruby>", memo: "", type: "revenue" }
+      ]
+    },
+    {
+      text: "商品を 4,000円で<ruby>仕入<rt>しい</rt></ruby>れ、代金は<ruby>掛<rt>かけ</rt></ruby>とした。なお、当社負担の<ruby>発送費<rt>はっそうひ</rt></ruby> 500円は<ruby>現金<rt>げんきん</rt></ruby>で支払った。",
+      left: ["仕入", "発送費"], right: ["買掛金", "現金"],
+      choices: [
+        { id: "仕入", ruby: "<ruby>仕入<rt>しいれ</rt></ruby>", memo: "", type: "expense" },
+        { id: "買掛金", ruby: "<ruby>買掛金<rt>かいかけきん</rt></ruby>", memo: "", type: "liability" },
+        { id: "現金", ruby: "<ruby>現金<rt>げんきん</rt></ruby>", memo: "", type: "asset" },
+        { id: "発送費", ruby: "<ruby>発送費<rt>はっそうひ</rt></ruby>", memo: "", type: "expense" },
+        { id: "支払手数料", ruby: "<ruby>支払手数料<rt>しはらいてすうりょう</rt></ruby>", memo: "", type: "expense" }
+      ]
+    }
+  ];
+
+  /* =====================
+     状態管理
+     ===================== */
+  let mainMode = 'kids';    // 'kids' or 'adult'
+  let adultMode = 'beginner'; // 'beginner' or 'pro'
+  let currentIdx = 0;
+  
+  let selectedCard = null;
+  let leftCards = [];
+  let rightCards = [];
+  let score = 0;
+  let combo = 0;
+
+  function setMainMode(mode) {
+    mainMode = mode;
+    currentIdx = 0;
+    score = 0;
+    combo = 0;
+    
+    document.getElementById("nav-kids").classList.toggle("active", mode === 'kids');
+    document.getElementById("nav-adult").classList.toggle("active", mode === 'adult');
+    
+    if (mode === 'kids') {
+      document.body.className = 'kids-mode';
+      document.getElementById("adult-sub-nav").classList.remove("show");
+      document.getElementById("title-left").innerHTML = "🎁 左：ゲットしたもの（増えた）";
+      document.getElementById("hint-left").innerHTML = "手に入れたもの・増えたもの";
+      document.getElementById("title-right").innerHTML = "👛 右：バイバイしたもの（減った）";
+      document.getElementById("hint-right").innerHTML = "手ばなしたもの・あげたもの";
+    } else {
+      document.body.className = `adult-mode ${adultMode}-mode`;
+      document.getElementById("adult-sub-nav").classList.add("show");
+      document.getElementById("title-left").innerHTML = "<ruby>借方<rt>かりかた</rt></ruby>（左側）";
+      document.getElementById("hint-left").innerHTML = "増えたお金・かかった費用など";
+      document.getElementById("title-right").innerHTML = "<ruby>貸方<rt>かしかた</rt></ruby>（右側）";
+      document.getElementById("hint-right").innerHTML = "減ったお金・売上・借金など";
+      document.getElementById("score").innerText = score;
+      document.getElementById("combo").innerText = combo;
+    }
+    loadQuestion();
+  }
+
+  function switchAdultMode(subMode) {
+    adultMode = subMode;
+    currentIdx = 0;
+    document.body.className = `adult-mode ${adultMode}-mode`;
+    document.getElementById("btn-beginner").classList.toggle("active", subMode === 'beginner');
+    document.getElementById("btn-pro").classList.toggle("active", subMode === 'pro');
+    loadQuestion();
+  }
+
+  function getActiveQuestions() {
+    if (mainMode === 'kids') return kidsQuestions;
+    return adultMode === 'beginner' ? beginnerQuestions : proQuestions;
+  }
+
+  /* =====================
+     UI / 描画ロジック
+     ===================== */
+  function getCardInnerHTML(c) {
+    if (mainMode === 'kids') {
+      return `<span class="card-main">${c.label}</span><span class="card-sub">${c.sub}</span>`;
+    } else {
+      return `${c.ruby}<span class="memo">${c.memo}</span>`;
+    }
+  }
+
+  function getCardClassName(c) {
+    let cls = "card";
+    if (mainMode === 'adult' && c.type) cls += ` ${c.type}`;
+    return cls;
+  }
+
+  function loadQuestion() {
+    const questions = getActiveQuestions();
+    const q = questions[currentIdx];
+    
+    document.getElementById("question-text").innerHTML = q.text;
+    document.getElementById("feedback").innerHTML = "";
+    document.getElementById("check-btn").innerText = mainMode === 'kids' ? "これできまり！" : "これで決定！";
+    document.getElementById("check-btn").onclick = checkAnswer;
+    
+    leftCards = [];
+    rightCards = [];
+    selectedCard = null;
+    renderBoard();
+    
+    const pool = document.getElementById("cards-pool");
+    pool.innerHTML = "";
+    const shuffled = [...q.choices].sort(() => Math.random() - 0.5);
+    
+    shuffled.forEach(item => {
+      const div = document.createElement("div");
+      div.className = getCardClassName(item);
+      div.id = `card-${item.id}`;
+      div.innerHTML = getCardInnerHTML(item);
+      div.onclick = () => selectCard(item);
+      pool.appendChild(div);
+    });
+  }
+
+  function selectCard(item) {
+    leftCards = leftCards.filter(c => c.id !== item.id);
+    rightCards = rightCards.filter(c => c.id !== item.id);
+    selectedCard = item;
+    
+    document.querySelectorAll(".card").forEach(c => c.classList.remove("selected"));
+    document.getElementById(`card-${item.id}`).classList.add("selected");
+    
+    document.getElementById("left-zone").classList.add("active");
+    document.getElementById("right-zone").classList.add("active");
+    renderBoard();
+  }
+
+  function placeCard(side) {
+    if (!selectedCard) return;
+    
+    // 最大配置数：キッズと本格は最大2、入門は1
+    const maxCards = (mainMode === 'kids' || (mainMode === 'adult' && adultMode === 'pro')) ? 2 : 1;
+    
+    if (side === "left") {
+      if (leftCards.length >= maxCards) leftCards.shift();
+      leftCards.push(selectedCard);
+    } else {
+      if (rightCards.length >= maxCards) rightCards.shift();
+      rightCards.push(selectedCard);
+    }
+    selectedCard = null;
+    
+    document.querySelectorAll(".card").forEach(c => c.classList.remove("selected"));
+    document.getElementById("left-zone").classList.remove("active");
+    document.getElementById("right-zone").classList.remove("active");
+    renderBoard();
+  }
+
+  function removeCard(side, id, event) {
+    event.stopPropagation();
+    if (side === 'left') {
+      leftCards = leftCards.filter(c => c.id !== id);
+    } else {
+      rightCards = rightCards.filter(c => c.id !== id);
+    }
+    renderBoard();
+  }
+
+  function renderBoard() {
+    const leftSlot = document.getElementById("left-slot");
+    const rightSlot = document.getElementById("right-slot");
+    
+    let emptyMsg = "";
+    if (mainMode === 'kids') {
+      emptyMsg = "カードをえらんで<br>ここをタップ！";
+    } else {
+      emptyMsg = adultMode === 'beginner' ? "カードを選んでタップ" : "カードを選んでタップ<br>（最大2枚まで）";
+    }
+      
+    leftSlot.innerHTML = leftCards.length > 0
+      ? leftCards.map(c => `<div class="${getCardClassName(c)}" onclick="removeCard('left', '${c.id}', event)">${getCardInnerHTML(c)}</div>`).join("")
+      : emptyMsg;
+      
+    rightSlot.innerHTML = rightCards.length > 0
+      ? rightCards.map(c => `<div class="${getCardClassName(c)}" onclick="removeCard('right', '${c.id}', event)">${getCardInnerHTML(c)}</div>`).join("")
+      : emptyMsg;
+  }
+
+  function arraysMatch(arr1, arr2) {
+    if (arr1.length !== arr2.length) return false;
+    const sorted1 = [...arr1].sort();
+    const sorted2 = [...arr2].sort();
+    return sorted1.every((val, idx) => val === sorted2[idx]);
+  }
+
+  function checkAnswer() {
+    if (leftCards.length === 0 || rightCards.length === 0) {
+      document.getElementById("feedback").innerHTML = mainMode === 'kids' ? "左右にカードを入れてね！" : "左右どちらにもカードを入れてね！";
+      return;
+    }
+    
+    const questions = getActiveQuestions();
+    const q = questions[currentIdx];
+    const fb = document.getElementById("feedback");
+    
+    const userLeftIds = leftCards.map(c => c.id);
+    const userRightIds = rightCards.map(c => c.id);
+    const isCorrect = arraysMatch(userLeftIds, q.left) && arraysMatch(userRightIds, q.right);
+    
+    if (mainMode === 'kids') {
+      if (isCorrect) {
+        fb.innerHTML = "✨ 大せいかい！よくできたね！ ✨";
+        fb.style.color = "#d81b60";
+        const btn = document.getElementById("check-btn");
+        if (currentIdx === questions.length - 1) {
+          btn.innerText = "最初からあそぶ ➔";
+          btn.onclick = () => { currentIdx = 0; loadQuestion(); };
+        } else {
+          btn.innerText = "次のレベルへ ➔";
+          btn.onclick = () => { currentIdx++; loadQuestion(); };
+        }
+      } else {
+        fb.innerHTML = "💦 おしい！もう1回考えてみよう";
+        fb.style.color = "#1565c0";
+      }
+    } else {
+      if (isCorrect) {
+        score++; combo++;
+        fb.innerHTML = "⭕ 大せいかい！素晴らしい！";
+      } else {
+        combo = 0;
+        fb.innerHTML = `<span style='color:#e74c3c;'>❌ おしい！<br>正解は 左：${q.left.join("・")} ／ 右：${q.right.join("・")}</span>`;
+      }
+      document.getElementById("score").innerText = score;
+      document.getElementById("combo").innerText = combo;
+      
+      const btn = document.getElementById("check-btn");
+      btn.innerText = "次の問題へ ➔";
+      btn.onclick = () => {
+        currentIdx = (currentIdx + 1) % questions.length;
+        loadQuestion();
+      };
+    }
+  }
+
+  // 初期ロード
+  setMainMode('kids');
+</script>
+</body>
+</html>
