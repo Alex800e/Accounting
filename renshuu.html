@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ぼき 仕分けれんしゅう100問</title>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a1f24;--mat:#123b3b;--gold:#e3b64f;--paper:#fbf6e9;--ink:#202024}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 50% 30%,var(--mat),var(--bg) 80%);color:#f3ecd6;font-family:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;min-height:100vh}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+#app{max-width:860px;margin:0 auto;padding:8px 12px 30px;display:grid;gap:12px}
+header{display:flex;gap:14px;align-items:baseline;border-bottom:1px solid rgba(227,182,79,.4);padding:6px 2px}
+h1{font:400 20px "Dela Gothic One",sans-serif;color:var(--gold);margin:0 auto 0 0}
+nav{display:flex;gap:6px;flex-wrap:wrap}
+.st{background:#fff2;color:#f3ecd6;border:1px solid #fff4;border-radius:16px;padding:3px 12px;font-size:13px}
+.st.on{background:var(--gold);color:#241b05;font-weight:900}
+.q{background:#0005;border:2px solid var(--gold);border-radius:12px;padding:12px 16px}
+.q small{color:var(--gold)}
+.q p{margin:4px 0;font-size:20px;font-weight:900;line-height:1.5}
+.q .how{font-size:14px;font-weight:400;opacity:.9}
+.board{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.zone{min-height:150px;border:3px dashed rgba(227,182,79,.6);border-radius:12px;padding:8px;background:#fff1;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.zone h3{margin:0;width:100%;text-align:center;color:var(--gold);font-size:15px}
+.zone.over,.zone.tgt{background:#e3b64f33;border-style:solid}
+.zone.shake{animation:sk .35s}
+@keyframes sk{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.chip{padding:6px 12px;border-left:6px solid var(--c);background:var(--paper);color:var(--ink);border-radius:6px;font-weight:900;animation:pop .3s}
+@keyframes pop{from{transform:scale(.6)}}
+.tray{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:10px;border-radius:12px;background:#0004}
+.drag{touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}
+.drag.sel{outline:3px solid var(--gold);transform:translateY(-3px)}
+.card{width:128px;padding:7px 8px;border-top:6px solid var(--c);background:var(--paper);color:var(--ink);border-radius:8px;box-shadow:0 3px 0 #0007;line-height:1.3}
+.card b{display:block;font-size:14px}.card span{font-size:11px}.card em{font-size:11px;font-style:normal;color:#666;display:block}
+.money{display:grid;place-items:center;font-weight:900;color:#3a2a00}
+.coin{width:96px;height:96px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3b0,#e3b64f 60%,#a77a1c);border:4px solid #b38a2c;font-size:18px}
+.note{width:170px;height:84px;border-radius:6px;background:linear-gradient(135deg,#bfe8c4,#7cc58a);border:3px solid #3f8a52;color:#14391f;font-size:22px}
+.ghost{position:fixed;z-index:9;pointer-events:none;opacity:.85;transform:translate(-50%,-50%) rotate(-4deg)}
+.msg{min-height:1.6em;text-align:center;font-weight:700;margin:0}
+.msg.ng{color:#ff9d9d}.msg.ok{color:#9ff0b0;font-size:20px}
+.btn{background:var(--gold);color:#241b05;border:0;border-radius:10px;padding:10px 26px;font-weight:900;font-size:16px;box-shadow:0 3px 0 #0007;justify-self:center}
+.ov{position:fixed;inset:0;background:#000b;display:grid;place-items:center;padding:14px;z-index:20}
+.box{background:#0e2b2e;border:3px solid var(--gold);border-radius:14px;padding:22px;max-width:420px;text-align:center;display:grid;gap:12px}
+.box h2{font:400 28px "Dela Gothic One";color:var(--gold);margin:0}
+@media (max-width:520px){.card{width:calc(50% - 6px)}.note{width:150px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// 形式：コード,出来事,金額（コード b借入 s売上 c資本金 x経費 v車両 k建物 p備品 r返済 i利息 ri返済+利息）
+const DATA=`s,ジュースが売れて,500;x,電気代を払って,100;b,銀行からお金を借りて,1000;p,お店の道具を買って,800;c,親が元手を出してくれて,500;r,借りたお金を返して,500;x,商品を仕入れて,300;s,サービスのお代をもらって,700;b,友だちから借りて,200;x,チラシを印刷して,400;x,お店の家賃を払って,3000;s,パンを売って,600;c,自分のお金を出してお店を始めて,2000;v,社有車を買って,10000;i,利息を払って,100;s,髪をカットして,1500;r,銀行へ返済して,3000;x,切手を買って,200;s,ケーキが売れて,800;p,パソコンを買って,5000;
+b,銀行から借りて,2000;s,ジュースを売って,500;x,商品を仕入れて,300;c,親が元手を出してくれて,1000;x,電気代を払って,200;b,友だちから借りて,500;s,お弁当を売って,800;x,お店で使う紙を買って,100;c,自分で元手を入れて,3000;x,ケーキの材料を買って,1200;s,髪をカットして,1500;x,水道代を払って,300;b,家族から借りて,1000;s,パンが売れて,400;x,家賃を払って,5000;c,出資してもらって,2000;b,銀行から借りて,5000;x,お花を仕入れて,800;s,マッサージをして,1000;x,広告を出して,600;s,おもちゃを売って,900;x,コーヒー豆を仕入れて,700;c,親が元手を出してくれて,500;b,信用金庫から借りて,3000;s,イラストを描いて,2500;x,ガス代を払って,400;x,野菜を仕入れて,1000;s,クッキーを売って,350;x,電話代を払って,150;s,修理サービスをして,3000;
+v,社有車を買って,10000;k,お店の建物を買って,20000;p,パソコンを買って,5000;p,レジを買って,3000;v,配達用のトラックを買って,15000;s,ジュースが売れて,500;p,冷蔵庫を買って,8000;x,電気代を払って,300;b,銀行から借りて,10000;p,机と椅子を買って,2000;k,倉庫を買って,12000;x,コピー用紙を買って,200;p,オーブンを買って,6000;v,配達用の軽トラックを買って,9000;c,親が元手を出してくれて,3000;x,チラシ代を払って,400;p,看板を買って,1500;x,ボールペンを1本買って,100;s,サービス料金をもらって,2000;k,工房の建物を買って,30000;p,プリンターを買って,4000;x,材料を仕入れて,1000;v,営業用の車を買って,12000;b,友だちから借りて,3000;p,パンの焼き窯を買って,7000;
+r,親に借りたお金を返して,500;ri,銀行に1000円と利息100円を返して,1100;r,友だちに借りたお金を返して,200;i,銀行に利息だけ払って,300;r,家族に借りたお金を返して,1000;s,ケーキを売って,1000;v,社有車を買って,8000;c,親に出資してもらって,2000;x,材料を仕入れて,500;b,銀行から借りて,4000;k,建物を買って,25000;ri,銀行に2000円と利息200円を返して,2200;x,電気代を払って,150;s,髪を染めて,2000;p,パソコンを買って,6000;b,友だちから借りて,1500;c,自分で元手を入れて,5000;r,信用金庫に返済して,5000;s,修理サービスをして,4000;v,配達トラックを買って,14000;x,家賃を払って,2000;r,親から借りたお金を返して,3000;x,ジュースを仕入れて,250;p,冷蔵庫を買って,9000;ri,銀行に1000円と利息50円を返して,1050`;
+const NEED={b:['lo'],s:['sa'],c:['ca'],x:['ex'],v:['ve'],k:['bu'],p:['eq'],r:['rp'],i:['in'],ri:['rp','in']};
+const Q=DATA.replace(/\n/g,'').split(';').map((r,n)=>{const[c,t,a]=r.split(',');const inc='bsc'.includes(c)&&c.length==1;return{c,a:+a,inc,need:NEED[c],cashOnly:n<20,text:`${t}、お金が${(+a).toLocaleString()}円${inc?'増えた':'減った'}。`}});
+const R={lo:['借入金（借りた）','お金を借りた（あとで返す）','負債','#b3263a'],rp:['借入金（返した）','借りたお金を返した','負債','#b3263a'],ca:['資本金','商売を始める元手','資本','#2e9e5b'],sa:['売上','売って得た価値','収益','#e8b923'],ex:['経費・仕入','商売のために使った・買った','費用','#8a4bc4'],in:['支払利息','借りたお金に足して払う','費用','#ef8a2a'],ve:['車両','社有車・トラック','資産','#2b8fa6'],bu:['建物','お店・倉庫・工房','資産','#2b8fa6'],eq:['備品','長く使う道具・機械','資産','#2b8fa6']};
+const STEPS=[['ステップ1',0],['ステップ2',20],['ステップ3',50],['ステップ4',75]];
+const $=s=>document.querySelector(s);
+let S,drag=null;
+function init(i=0){S={i,phase:'cash',pl:{L:[],R:[]},need:[...Q[i].need],qmiss:false,ok:S?S.ok:0,miss:S?S.miss:0,sel:null,msg:'',cls:''};render()}
+const stepOf=i=>i<20?0:i<50?1:i<75?2:3;
+function render(){
+ const q=Q[S.i],ph=S.phase,rs=q.inc?'R':'L';
+ let h=`<header><h1>ぼき 仕分けれんしゅう</h1><span>${S.i+1} / ${Q.length}問</span><span>一発正解 ${S.ok}　ミス ${S.miss}</span></header>`;
+ h+=`<nav>${STEPS.map((s,k)=>`<button class="st ${stepOf(S.i)==k?'on':''}" data-go="${s[1]}">${s[0]}</button>`).join('')}</nav>`;
+ h+=`<div class="q"><small>${STEPS[stepOf(S.i)][0]}</small><p>（${S.i+1}）${q.text}</p><p class="how">${ph=='cash'?'① お金のイメージを、左か右のエリアにドラッグ！（増えた→左　減った→右）':ph=='reason'?'② 理由のカードを、現金とは反対のエリアにドラッグ！':'できた！'}</p></div>`;
+ h+=`<div class="board">${['L','R'].map(s=>`<div class="zone ${S.sel?'tgt':''}" data-s="${s}"><h3>${s=='L'?'借方（左）':'貸方（右）'}</h3>${S.pl[s].map(c=>`<div class="chip" style="--c:${c[1]}">${c[0]}</div>`).join('')}</div>`).join('')}</div>`;
+ h+=`<p class="msg ${S.cls}">${S.msg}</p>`;
+ if(ph=='cash'){const note=q.a>=1000;h+=`<div class="tray"><div class="drag money ${note?'note':'coin'} ${S.sel=='cash'?'sel':''}" data-k="cash" role="button" tabindex="0">${q.a.toLocaleString()}円</div></div>`}
+ else if(ph=='reason')h+=`<div class="tray">${Object.keys(R).map(k=>`<div class="drag card ${S.sel==k?'sel':''}" data-k="${k}" style="--c:${R[k][3]}"><b>${R[k][0]}</b><span>${R[k][1]}</span><em>（${R[k][2]}）</em></div>`).join('')}</div>`;
+ else h+=`<button class="btn" data-next>${S.i+1<Q.length?'次の問題へ':'けっかを見る'}</button>`;
+ if(S.end)h+=`<div class="ov"><div class="box"><h2>おつかれさま！</h2><p>${Q.length}問中、一発正解は ${S.ok} 問、ミスは ${S.miss} 回でした。</p><button class="btn" data-go="0" data-reset>もう一度</button></div></div>`;
+ $('#app').innerHTML=h;
+}
+function miss(side,m){S.miss++;S.qmiss=true;S.sel=null;S.msg=m;S.cls='ng';render();const z=document.querySelector(`.zone[data-s="${side}"]`);z&&z.classList.add('shake')}
+function drop(k,side){
+ const q=Q[S.i];
+ if(S.phase=='cash'){
+  if(side!=(q.inc?'L':'R'))return miss(side,q.inc?'お金が増えたときは、左だよ。':'お金が減ったときは、右だよ。');
+  S.pl[side].push([q.inc?`現金＋ ${q.a.toLocaleString()}円`:`現金－ ${q.a.toLocaleString()}円`,q.inc?'#2f6fd0':'#d0343f']);
+  S.sel=null;S.cls='ok';
+  if(q.cashOnly){S.phase='done';S.msg='正解！'}else{S.phase='reason';S.msg='いいね！次は理由のカード。'}
+ }else{
+  if(!S.need.includes(k))return miss(side,'その理由じゃないみたい。カードの意味を読みなおそう。');
+  if(side!=(q.inc?'R':'L'))return miss(side,'置く場所が逆だよ。理由は現金とは反対側。');
+  S.pl[side].push([R[k][0],R[k][3]]);S.need.splice(S.need.indexOf(k),1);S.sel=null;S.cls='ok';
+  if(S.need.length)S.msg='正解！もう1枚、置こう。';else{S.phase='done';S.msg='正解！'}
+ }
+ if(S.phase=='done'&&!S.qmiss)S.ok++;
+ render();const b=$('[data-next]');b&&b.focus();
+}
+document.addEventListener('pointerdown',e=>{
+ const t=e.target.closest('.drag');if(!t)return;e.preventDefault();
+ drag={t,x:e.clientX,y:e.clientY,g:null};
+});
+document.addEventListener('pointermove',e=>{
+ if(!drag)return;
+ if(!drag.g&&Math.hypot(e.clientX-drag.x,e.clientY-drag.y)>6){drag.g=drag.t.cloneNode(true);drag.g.classList.add('ghost');drag.g.classList.remove('sel');document.body.appendChild(drag.g)}
+ if(drag.g){drag.g.style.left=e.clientX+'px';drag.g.style.top=e.clientY+'px';
+  document.querySelectorAll('.zone').forEach(z=>z.classList.remove('over'));
+  const z=document.elementFromPoint(e.clientX,e.clientY)?.closest('.zone');z&&z.classList.add('over')}
+});
+document.addEventListener('pointerup',e=>{
+ if(!drag)return;const d=drag;drag=null;
+ if(d.g){d.g.remove();document.querySelectorAll('.zone').forEach(z=>z.classList.remove('over'));
+  const z=document.elementFromPoint(e.clientX,e.clientY)?.closest('.zone');if(z)drop(d.t.dataset.k,z.dataset.s)}
+ else{S.sel=S.sel==d.t.dataset.k?null:d.t.dataset.k;render()}
+});
+document.addEventListener('click',e=>{
+ const g=e.target.closest('[data-go]');
+ if(g){if(g.hasAttribute('data-reset')){S=null}init(+g.dataset.go);return}
+ if(e.target.closest('[data-next]')){if(S.i+1<Q.length)init(S.i+1);else{S.end=true;render()}return}
+ const z=e.target.closest('.zone');if(z&&S.sel)drop(S.sel,z.dataset.s);
+});
+document.addEventListener('keydown',e=>{if((e.key=='Enter'||e.key==' ')&&e.target.matches('.drag')){e.preventDefault();S.sel=S.sel==e.target.dataset.k?null:e.target.dataset.k;render()}});
+S=null;init(0);
+</script>
+</body>
+</html>
