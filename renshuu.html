@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ぼき 仕分けれんしゅう100問</title>
+<title>ぼき 仕分けれんしゅう200問</title>
 <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0a1f24;--mat:#123b3b;--gold:#e3b64f;--paper:#fbf6e9;--ink:#202024}
@@ -33,7 +33,7 @@ nav{display:flex;gap:6px;flex-wrap:wrap}
 .drag{touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}
 .drag.sel{outline:3px solid var(--gold);transform:translateY(-3px)}
 .card{width:128px;padding:7px 8px;border-top:6px solid var(--c);background:var(--paper);color:var(--ink);border-radius:8px;box-shadow:0 3px 0 #0007;line-height:1.3}
-.card b{display:block;font-size:14px}.card span{font-size:11px}.card em{font-size:11px;font-style:normal;color:#666;display:block}
+.card.w{width:210px}.card b{display:block;font-size:14px}.card span{font-size:11px}.card em{font-size:11px;font-style:normal;color:#666;display:block}
 .money{display:grid;place-items:center;font-weight:900;color:#3a2a00}
 .coin{width:96px;height:96px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3b0,#e3b64f 60%,#a77a1c);border:4px solid #b38a2c;font-size:18px}
 .note{width:170px;height:84px;border-radius:6px;background:linear-gradient(135deg,#bfe8c4,#7cc58a);border:3px solid #3f8a52;color:#14391f;font-size:22px}
@@ -44,7 +44,7 @@ nav{display:flex;gap:6px;flex-wrap:wrap}
 .ov{position:fixed;inset:0;background:#000b;display:grid;place-items:center;padding:14px;z-index:20}
 .box{background:#0e2b2e;border:3px solid var(--gold);border-radius:14px;padding:22px;max-width:420px;text-align:center;display:grid;gap:12px}
 .box h2{font:400 28px "Dela Gothic One";color:var(--gold);margin:0}
-@media (max-width:520px){.card{width:calc(50% - 6px)}.note{width:150px}}
+@media (max-width:520px){.card{width:calc(50% - 6px)}.card.w{width:100%}.note{width:150px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
 </style>
 </head>
@@ -57,22 +57,67 @@ b,銀行から借りて,2000;s,ジュースを売って,500;x,商品を仕入れ
 v,社有車を買って,10000;k,お店の建物を買って,20000;p,パソコンを買って,5000;p,レジを買って,3000;v,配達用のトラックを買って,15000;s,ジュースが売れて,500;p,冷蔵庫を買って,8000;x,電気代を払って,300;b,銀行から借りて,10000;p,机と椅子を買って,2000;k,倉庫を買って,12000;x,コピー用紙を買って,200;p,オーブンを買って,6000;v,配達用の軽トラックを買って,9000;c,親が元手を出してくれて,3000;x,チラシ代を払って,400;p,看板を買って,1500;x,ボールペンを1本買って,100;s,サービス料金をもらって,2000;k,工房の建物を買って,30000;p,プリンターを買って,4000;x,材料を仕入れて,1000;v,営業用の車を買って,12000;b,友だちから借りて,3000;p,パンの焼き窯を買って,7000;
 r,親に借りたお金を返して,500;ri,銀行に1000円と利息100円を返して,1100;r,友だちに借りたお金を返して,200;i,銀行に利息だけ払って,300;r,家族に借りたお金を返して,1000;s,ケーキを売って,1000;v,社有車を買って,8000;c,親に出資してもらって,2000;x,材料を仕入れて,500;b,銀行から借りて,4000;k,建物を買って,25000;ri,銀行に2000円と利息200円を返して,2200;x,電気代を払って,150;s,髪を染めて,2000;p,パソコンを買って,6000;b,友だちから借りて,1500;c,自分で元手を入れて,5000;r,信用金庫に返済して,5000;s,修理サービスをして,4000;v,配達トラックを買って,14000;x,家賃を払って,2000;r,親から借りたお金を返して,3000;x,ジュースを仕入れて,250;p,冷蔵庫を買って,9000;ri,銀行に1000円と利息50円を返して,1050`;
 const NEED={b:['lo'],s:['sa'],c:['ca'],x:['ex'],v:['ve'],k:['bu'],p:['eq'],r:['rp'],i:['in'],ri:['rp','in']};
-const Q=DATA.replace(/\n/g,'').split(';').map((r,n)=>{const[c,t,a]=r.split(',');const inc='bsc'.includes(c)&&c.length==1;return{c,a:+a,inc,need:NEED[c],cashOnly:n<20,text:`${t}、お金が${(+a).toLocaleString()}円${inc?'増えた':'減った'}。`}});
-const R={lo:['借入金（借りた）','お金を借りた（あとで返す）','負債','#b3263a'],rp:['借入金（返した）','借りたお金を返した','負債','#b3263a'],ca:['資本金','商売を始める元手','資本','#2e9e5b'],sa:['売上','売って得た価値','収益','#e8b923'],ex:['経費・仕入','商売のために使った・買った','費用','#8a4bc4'],in:['支払利息','借りたお金に足して払う','費用','#ef8a2a'],ve:['車両','社有車・トラック','資産','#2b8fa6'],bu:['建物','お店・倉庫・工房','資産','#2b8fa6'],eq:['備品','長く使う道具・機械','資産','#2b8fa6']};
-const STEPS=[['ステップ1',0],['ステップ2',20],['ステップ3',50],['ステップ4',75]];
+const OLD=['lo','rp','ca','sa','ex','in','ve','bu','eq'];
+const Q=DATA.replace(/\n/g,'').split(';').map((r,n)=>{const[c,t,a]=r.split(',');const inc=c.length==1&&'bsc'.includes(c);
+ return{step:n<20?0:n<50?1:n<75?2:3,cash:inc?'i':'o',a:+a,cashOnly:n<20,need:NEED[c].map(k=>[k,inc?'R':'L']),tray:OLD,text:`${t}、お金が${(+a).toLocaleString()}円${inc?'増えた':'減った'}。`}});
+// ステップ5〜9：出来事~現金(i増/o減)~金額~左のカード~右のカード
+const CAT=[['ur','te','kt','um','ma','ka'],['kr','st','lo','mb','mu','kk','az'],['ca','kb'],['sa','ju','tt','ya'],['sr','kw','ry','sk','yc','in','ko']];
+const DATA2=[
+`商品を5,000円で売り、代金はあとでもらう約束をした。~~~ur~sa;商品を8,000円で売り、代金は手形で受け取った。~~~te~sa;友だちに3,000円を貸した。~o~3000~kt~;パソコンを20,000円で売り、代金はあとでもらう約束をした。~~~um~eq;部品の代金10,000円を先に払った（商品はあとで届く）。~o~10000~ma~;出張に行く社員に、概算で10,000円を渡した。~o~10000~ka~;売掛金3,000円が現金で入ってきた。~i~3000~~ur;手形5,000円が期日になり、銀行に入金された。~i~5000~~te;貸していた2,000円が戻ってきた。~i~2000~~kt;商品を12,000円で売り、代金はあとでもらう約束をした。~~~ur~sa;商品を4,000円で売り、手形を受け取った。~~~te~sa;知人に10,000円を貸した。~o~10000~kt~;社有車を15,000円で売り、代金はあとでもらう約束をした。~~~um~ve;商品の代金3,000円を先に払った（商品はあとで届く）。~o~3000~ma~;社員に、出張のための5,000円を概算で渡した。~o~5000~ka~;出張から戻った社員が、渡していた5,000円を旅費として精算した。~~~ry~ka;売掛金6,000円が現金で入ってきた。~i~6000~~ur;貸していた5,000円が戻ってきた。~i~5000~~kt;先に3,000円を払っていた商品が届いた。~~~sr~ma;冷蔵庫を10,000円で売り、代金はあとでもらう約束をした。~~~um~eq`,
+`商品を6,000円で仕入れ、代金はあとで払う約束をした。~~~sr~kr;商品を5,000円で仕入れ、手形を渡した。~~~sr~st;銀行から10,000円を借りた。~i~10000~~lo;パソコンを30,000円で買い、代金はあとで払う約束をした。~~~eq~mb;商品を注文され、手付金として4,000円を先にもらった。~i~4000~~mu;理由のわからない2,000円が、口座に振り込まれた。~i~2000~~kk;給料10,000円のうち、税金1,000円を預かって、残りの9,000円を現金で渡した。~o~9000~kw~az;買掛金6,000円を現金で支払った。~o~6000~kr~;支払手形5,000円が、銀行口座から引き落とされた。~o~5000~st~;借りていた3,000円を返した。~o~3000~rp~;未払金10,000円を現金で支払った。~o~10000~mb~;前にもらっていた手付金4,000円の商品を渡し、売上にした。~~~mu~sa;預かっていた税金3,000円を、現金で役所に納めた。~o~3000~az~;振り込まれていた2,000円が、売上代金だとわかった。~~~kk~sa;机を8,000円で買い、代金はあとで払う約束をした。~~~eq~mb;商品を9,000円で仕入れ、代金はあとで払う約束をした。~~~sr~kr;銀行から20,000円を借りた。~i~20000~~lo;買掛金4,000円の支払いのため、手形を渡した。~~~kr~st;手付金として2,000円を先にもらった。~i~2000~~mu;銀行に借りていた10,000円を返した。~o~10000~rp~`,
+`親が、元手として5,000円を出資してくれた。~i~5000~~ca;自分で、元手として10,000円を会社に入れた。~i~10000~~ca;社長が、自分の車（10,000円分）を元手として会社に出した。~~~ve~ca;社長が、自分のパソコン（8,000円分）を元手として会社に出した。~~~eq~ca;出資として、建物（30,000円分）を会社に出してもらった。~~~bu~ca;友だちが、元手として3,000円を出資してくれた。~i~3000~~ca;親から5,000円を借りた（あとで返す）。~i~5000~~lo;株主への配当として、貯まった利益から4,000円を現金で払った。~o~4000~kb~;銀行から8,000円を借りた（あとで返す）。~i~8000~~lo;出資を受けて、現金20,000円が会社に入った。~i~20000~~ca;出資として、レジ（5,000円分）を会社に出してもらった。~~~eq~ca;家族が、元手として7,000円を出資してくれた。~i~7000~~ca;友だちから1,000円を借りた（あとで返す）。~i~1000~~lo;貯まった利益から、配当として3,000円を現金で払った。~o~3000~kb~;出資として、トラック（12,000円分）を会社に出してもらった。~~~ve~ca;元手として、15,000円を出資してもらった。~i~15000~~ca;出資として、倉庫（20,000円分）を会社に出してもらった。~~~bu~ca;貯まった利益から、株主へ配当6,000円を現金で払った。~o~6000~kb~;信用金庫から5,000円を借りた（あとで返す）。~i~5000~~lo;商売を始めるための元手として、9,000円を入れた。~i~9000~~ca`,
+`商品を5,000円で売り、現金で受け取った。~i~5000~~sa;預けていたお金に利息300円がつき、現金で受け取った。~i~300~~ju;お金を貸していた相手から、利息200円を現金で受け取った。~i~200~~ju;売買の仲介をして、お礼の手数料2,000円を現金で受け取った。~i~2000~~tt;事務手続きを手伝い、手数料1,500円を現金で受け取った。~i~1500~~tt;持っている建物を貸し、家賃8,000円を現金で受け取った。~i~8000~~ya;持っている土地を貸し、地代5,000円を現金で受け取った。~i~5000~~ya;サービスを提供して、代金3,000円を現金で受け取った。~i~3000~~sa;商品を7,000円で売り、代金はあとでもらう約束をした。~~~ur~sa;商品を4,000円で売り、手形を受け取った。~~~te~sa;駐車場として土地を貸し、地代6,000円を現金で受け取った。~i~6000~~ya;商品を12,000円で売り、現金で受け取った。~i~12000~~sa;取引の仲介をして、手数料3,000円を現金で受け取った。~i~3000~~tt;預金の利息150円を、現金で受け取った。~i~150~~ju;建物を貸して、家賃10,000円を現金で受け取った。~i~10000~~ya;サービスを提供して、代金2,500円を現金で受け取った。~i~2500~~sa;書類の手続きをして、手数料800円を現金で受け取った。~i~800~~tt;商品を6,000円で売り、代金はあとでもらう約束をした。~~~ur~sa;お金を貸した相手から、利息100円を現金で受け取った。~i~100~~ju;倉庫を貸して、家賃4,000円を現金で受け取った。~i~4000~~ya`,
+`売る商品を5,000円で買い、現金で払った。~o~5000~sr~;従業員の給料20,000円を現金で払った。~o~20000~kw~;営業のための電車代1,200円を払った。~o~1200~ry~;出張のホテル代8,000円を払った。~o~8000~ry~;電気代3,000円を払った。~o~3000~sk~;水道代2,000円を払った。~o~2000~sk~;ガス代1,500円を払った。~o~1500~sk~;お店の建物の家賃10,000円を払った。~o~10000~yc~;事務所の家賃6,000円を払った。~o~6000~yc~;借りているお金の利息500円を払った。~o~500~in~;収入印紙を200円で買った。~o~200~ko~;固定資産税5,000円を納めた。~o~5000~ko~;自動車税3,000円を納めた。~o~3000~ko~;売る商品を3,000円で仕入れ、代金はあとで払う約束をした。~~~sr~kr;アルバイトの給料5,000円を現金で払った。~o~5000~kw~;出張のバス代800円を払った。~o~800~ry~;お店の土地を借りている地代4,000円を払った。~o~4000~yc~;銀行に利息300円を払った。~o~300~in~;売る商品を8,000円で買い、現金で払った。~o~8000~sr~;電気代2,500円を払った。~o~2500~sk~`];
+DATA2.forEach((d,g)=>d.split(';').forEach(r=>{const[t,c,a,L,R]=r.split('~');const need=[...(L?L.split('+'):[]).map(k=>[k,'L']),...(R?R.split('+'):[]).map(k=>[k,'R'])];
+ Q.push({step:4+g,cash:c,a:+a,cashOnly:false,need,tray:[...new Set([...CAT[g],...need.map(n=>n[0])])],text:t})}));
+// カード：[名前, やさしい意味, 区分, 色, 説明（ステップ5〜9）]
+const AS='#2b8fa6',LI='#b3263a',EX='#8a4bc4';
+const R={
+lo:['借入金（借りた）','お金を借りた（あとで返す）','負債',LI,'銀行などからお金を借りたとき、「あとで返済します」という約束。'],
+rp:['借入金（返した）','借りたお金を返した','負債',LI,'借りていたお金を返したので、「あとで返す約束」が減った。'],
+ca:['資本金','商売を始める元手','資本','#2e9e5b','会社を動かす元手として出資してもらった記録（返さなくていい）。'],
+sa:['売上','売って得た価値','収益','#e8b923','本業の商品やサービスを売ったから、お金（や売掛金）が増えた。'],
+ex:['経費・仕入','商売のために使った・買った','費用',EX],
+in:['支払利息','借りたお金に足して払う','費用','#ef8a2a','銀行などからお金を借りているレンタル料（利子）を払ったから、お金が減った。'],
+ve:['車両','社有車・トラック','資産',AS,'長く使う車。会社の財産として残る。'],
+bu:['建物','お店・倉庫・工房','資産',AS,'長く使う建物。会社の財産として残る。'],
+eq:['備品','長く使う道具・機械','資産',AS,'長く使う道具や機械（パソコン・冷蔵庫・レジなど）。'],
+ur:['売掛金','','資産',AS,'商品を売ったとき、「あとで代金をもらいます」という相手との約束。'],
+te:['受取手形','','資産',AS,'手形を受け取ったとき、「期日に銀行でお金をもらえる」という約束。'],
+kt:['貸付金','','資産',AS,'お金を貸したとき、「あとで元本を返してもらう」という相手との約束。'],
+um:['未収入金','','資産',AS,'商品以外（パソコンや車など）を売ったとき、「あとで代金をもらう」という約束。'],
+ma:['前払金','','資産',AS,'先にお金を払ったので、「あとで商品をもらう」という約束（商品引換券）。'],
+ka:['仮払金','','資産',AS,'社員に概算でお金を渡したので、「あとでレシートとお釣りで精算する」という社内の約束。'],
+kr:['買掛金','','負債',LI,'商品を仕入れたとき、「あとで代金を払います」という自分たちの約束。'],
+st:['支払手形','','負債',LI,'手形を振り出したとき、「期日に銀行口座から引き落とされる」という約束。'],
+mb:['未払金','','負債',LI,'商品以外（備品や消耗品など）を買ったとき、「あとで代金を払う」という約束。'],
+mu:['前受金','','負債',LI,'先に手付金をもらったので、「あとで商品を渡す」という自分たちの約束。'],
+kk:['仮受金','','負債',LI,'理由がわからないお金が振り込まれたとき、「内容が分かり次第、精算か返金する」という仮の約束。'],
+az:['預り金','','負債',LI,'社員の給料から税金や保険料を預かったので、「本人に代わって国や役所に納める」という約束。'],
+kb:['繰越利益剰余金','','資本','#2e9e5b','これまでの商売で稼いで、会社の中に貯まった利益（過去の儲け）。'],
+ju:['受取利息','','収益','#e8b923','預金やお金を貸していた利息がついたから、お金が増えた。'],
+tt:['受取手数料','','収益','#e8b923','仲介や事務手続きなどのサービスをしたお礼をもらったから、お金が増えた。'],
+ya:['受取家賃（地代）','','収益','#e8b923','持っている建物や土地を人に貸したから、お金が増えた。'],
+sr:['仕入','','費用',EX,'お客様に売る商品を買い入れたから、お金が減った（コストがかかった）。'],
+kw:['給料','','費用',EX,'従業員に働いてもらった対価を払ったから、お金が減った。'],
+ry:['旅費交通費','','費用',EX,'営業や出張のために電車・バス・飛行機・ホテルを使ったから、お金が減った。'],
+sk:['水道光熱費','','費用',EX,'お店や事務所の電気・ガス・水道を使ったから、お金が減った。'],
+yc:['支払家賃（地代）','','費用',EX,'お店や事務所の建物・土地を借りているから、お金が減った。'],
+ko:['租税公課','','費用',EX,'収入印紙を買ったり、固定資産税・自動車税などの税金を納めたから、お金が減った。']};
+const STEPS=[['ステップ1',0],['ステップ2',20],['ステップ3',50],['ステップ4',75],['ステップ5 資産',100],['ステップ6 負債',120],['ステップ7 資本',140],['ステップ8 収益',160],['ステップ9 費用',180]];
 const $=s=>document.querySelector(s);
 let S,drag=null;
-function init(i=0){S={i,phase:'cash',pl:{L:[],R:[]},need:[...Q[i].need],qmiss:false,ok:S?S.ok:0,miss:S?S.miss:0,sel:null,msg:'',cls:''};render()}
-const stepOf=i=>i<20?0:i<50?1:i<75?2:3;
+function init(i=0){const q=Q[i];S={i,phase:q.cash?'cash':'reason',pl:{L:[],R:[]},need:q.need.map(x=>[...x]),qmiss:false,ok:S?S.ok:0,miss:S?S.miss:0,sel:null,msg:'',cls:''};render()}
 function render(){
- const q=Q[S.i],ph=S.phase,rs=q.inc?'R':'L';
+ const q=Q[S.i],ph=S.phase,nw=q.step>3;
  let h=`<header><h1>ぼき 仕分けれんしゅう</h1><span>${S.i+1} / ${Q.length}問</span><span>一発正解 ${S.ok}　ミス ${S.miss}</span></header>`;
- h+=`<nav>${STEPS.map((s,k)=>`<button class="st ${stepOf(S.i)==k?'on':''}" data-go="${s[1]}">${s[0]}</button>`).join('')}</nav>`;
- h+=`<div class="q"><small>${STEPS[stepOf(S.i)][0]}</small><p>（${S.i+1}）${q.text}</p><p class="how">${ph=='cash'?'① お金のイメージを、左か右のエリアにドラッグ！（増えた→左　減った→右）':ph=='reason'?'② 理由のカードを、現金とは反対のエリアにドラッグ！':'できた！'}</p></div>`;
+ h+=`<nav>${STEPS.map((s,k)=>`<button class="st ${q.step==k?'on':''}" data-go="${s[1]}">${s[0]}</button>`).join('')}</nav>`;
+ const how=ph=='cash'?'① お金のイメージを、左か右のエリアにドラッグ！（増えた→左　減った→右）':ph=='reason'?(q.cash?(nw?'② のこりのカードを、正しいエリアにドラッグ！（カードの説明を読もう）':'② 理由のカードを、現金とは反対のエリアにドラッグ！'):'カードを、左と右の正しいエリアにドラッグ！（カードの説明を読もう）'):'できた！';
+ h+=`<div class="q"><small>${STEPS[q.step][0]}</small><p>（${S.i+1}）${q.text}</p><p class="how">${how}</p>${nw?'<p class="how">きまり：現金・資産・費用が増える→左　負債・資本・収益が増える→右（減るときは反対）</p>':''}</div>`;
  h+=`<div class="board">${['L','R'].map(s=>`<div class="zone ${S.sel?'tgt':''}" data-s="${s}"><h3>${s=='L'?'借方（左）':'貸方（右）'}</h3>${S.pl[s].map(c=>`<div class="chip" style="--c:${c[1]}">${c[0]}</div>`).join('')}</div>`).join('')}</div>`;
  h+=`<p class="msg ${S.cls}">${S.msg}</p>`;
- if(ph=='cash'){const note=q.a>=1000;h+=`<div class="tray"><div class="drag money ${note?'note':'coin'} ${S.sel=='cash'?'sel':''}" data-k="cash" role="button" tabindex="0">${q.a.toLocaleString()}円</div></div>`}
- else if(ph=='reason')h+=`<div class="tray">${Object.keys(R).map(k=>`<div class="drag card ${S.sel==k?'sel':''}" data-k="${k}" style="--c:${R[k][3]}"><b>${R[k][0]}</b><span>${R[k][1]}</span><em>（${R[k][2]}）</em></div>`).join('')}</div>`;
+ if(ph=='cash'){h+=`<div class="tray"><div class="drag money ${q.a>=1000?'note':'coin'} ${S.sel=='cash'?'sel':''}" data-k="cash" role="button" tabindex="0">${q.a.toLocaleString()}円</div></div>`}
+ else if(ph=='reason')h+=`<div class="tray">${q.tray.map(k=>`<div class="drag card ${nw?'w':''} ${S.sel==k?'sel':''}" data-k="${k}" style="--c:${R[k][3]}"><b>${R[k][0]}</b><span>${nw?(R[k][4]||R[k][1]):R[k][1]}</span><em>（${R[k][2]}）</em></div>`).join('')}</div>`;
  else h+=`<button class="btn" data-next>${S.i+1<Q.length?'次の問題へ':'けっかを見る'}</button>`;
  if(S.end)h+=`<div class="ov"><div class="box"><h2>おつかれさま！</h2><p>${Q.length}問中、一発正解は ${S.ok} 問、ミスは ${S.miss} 回でした。</p><button class="btn" data-go="0" data-reset>もう一度</button></div></div>`;
  $('#app').innerHTML=h;
@@ -81,14 +126,15 @@ function miss(side,m){S.miss++;S.qmiss=true;S.sel=null;S.msg=m;S.cls='ng';render
 function drop(k,side){
  const q=Q[S.i];
  if(S.phase=='cash'){
-  if(side!=(q.inc?'L':'R'))return miss(side,q.inc?'お金が増えたときは、左だよ。':'お金が減ったときは、右だよ。');
-  S.pl[side].push([q.inc?`現金＋ ${q.a.toLocaleString()}円`:`現金－ ${q.a.toLocaleString()}円`,q.inc?'#2f6fd0':'#d0343f']);
+  const inc=q.cash=='i';
+  if(side!=(inc?'L':'R'))return miss(side,inc?'お金が増えたときは、左だよ。':'お金が減ったときは、右だよ。');
+  S.pl[side].push([inc?`現金＋ ${q.a.toLocaleString()}円`:`現金－ ${q.a.toLocaleString()}円`,inc?'#2f6fd0':'#d0343f']);
   S.sel=null;S.cls='ok';
-  if(q.cashOnly){S.phase='done';S.msg='正解！'}else{S.phase='reason';S.msg='いいね！次は理由のカード。'}
+  if(q.cashOnly||!S.need.length){S.phase='done';S.msg='正解！'}else{S.phase='reason';S.msg='いいね！次はカード。'}
  }else{
-  if(!S.need.includes(k))return miss(side,'その理由じゃないみたい。カードの意味を読みなおそう。');
-  if(side!=(q.inc?'R':'L'))return miss(side,'置く場所が逆だよ。理由は現金とは反対側。');
-  S.pl[side].push([R[k][0],R[k][3]]);S.need.splice(S.need.indexOf(k),1);S.sel=null;S.cls='ok';
+  const j=S.need.findIndex(n=>n[0]==k&&n[1]==side);
+  if(j<0)return miss(side,S.need.some(n=>n[0]==k)?'置く場所が逆だよ。左右をよく考えよう。':'そのカードじゃないみたい。カードの説明を読みなおそう。');
+  S.pl[side].push([R[k][0],R[k][3]]);S.need.splice(j,1);S.sel=null;S.cls='ok';
   if(S.need.length)S.msg='正解！もう1枚、置こう。';else{S.phase='done';S.msg='正解！'}
  }
  if(S.phase=='done'&&!S.qmiss)S.ok++;
